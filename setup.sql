@@ -161,3 +161,24 @@ COMMENT ON COLUMN watch_history.watched_at IS 'Wanneer er gekeken is';
 COMMENT ON COLUMN watch_history.seconds_watched IS 'Aantal seconden effectief bekeken';
 
 -- ===== 4 SEQUENCES 
+CREATE SEQUENCE seq_genre_id
+    START WITH 1 INCREMENT BY 1 CACHE 20 NOORDER;
+
+CREATE SEQUENCE seq_person_id
+    START WITH 1 INCREMENT BY 1 CACHE 20 NOORDER;
+
+CREATE SEQUENCE seq_movie_id
+    START WITH 1 INCREMENT BY 1 CACHE 20 NOORDER;
+
+CREATE SEQUENCE seq_comment_id
+    START WITH 1 INCREMENT BY 1 CACHE 20 NOORDER;
+
+CREATE SEQUENCE seq_watch_id
+    START WITH 1 INCREMENT BY 1 CACHE 20 NOORDER;
+
+CREATE SEQUENCE seq_user_id
+    START WITH 1 INCREMENT BY 1 CACHE 20 NOORDER;
+
+SELECT seq_genre_id.NEXTVAL FROM dual;   -- geeft 1, verhoogt de teller
+SELECT seq_genre_id.NEXTVAL FROM dual;   -- geeft 2
+SELECT seq_genre_id.CURRVAL FROM dual;   -- geeft 2 (laatste waarde in deze sessie)
