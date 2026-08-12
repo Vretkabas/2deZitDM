@@ -25,6 +25,15 @@ DROP TABLE users;
 DROP TABLE people;
 DROP TABLE genres;
 
+-- sequences droppen
+DROP SEQUENCE seq_genre_id;
+DROP SEQUENCE seq_person_id;
+DROP SEQUENCE seq_movie_id;
+DROP SEQUENCE seq_comment_id;
+DROP SEQUENCE seq_watch_id;
+DROP SEQUENCE seq_user_id;
+
+
 -- ===== 2 DDL =====
 -- ERD ==> in ERD folder of betere view hier --> https://dbdiagram.io/d/FilmBibliotheek-6976329bbd82f5fce2892e35
 CREATE TABLE genres (
