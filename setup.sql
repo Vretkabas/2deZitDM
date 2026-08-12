@@ -169,7 +169,7 @@ COMMENT ON TABLE watch_history IS 'Kijkgeschiedenis, 1 rij per keer kijken';
 COMMENT ON COLUMN watch_history.watched_at IS 'Wanneer er gekeken is';
 COMMENT ON COLUMN watch_history.seconds_watched IS 'Aantal seconden effectief bekeken';
 
--- ===== 4 SEQUENCES 
+-- ===== 4 SEQUENCES =====
 CREATE SEQUENCE seq_genre_id
     START WITH 1 INCREMENT BY 1 CACHE 20 NOORDER;
 
