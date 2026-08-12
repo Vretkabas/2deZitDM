@@ -115,3 +115,49 @@ CREATE TABLE watch_history (
     seconds_watched NUMBER CONSTRAINT ck_watch_seconds CHECK (seconds_watched >= 0),
     CONSTRAINT pk_watch_history PRIMARY KEY (watch_id)
 );
+
+
+-- ===== 3 COMMENTS =====
+
+COMMENT ON TABLE genres IS 'Lijst van filmgenres';
+COMMENT ON COLUMN genres.name IS 'Naam van het genre, uniek';
+
+COMMENT ON TABLE people IS 'Acteurs, regisseurs en schrijvers';
+COMMENT ON COLUMN people.imdb_id IS 'IMDb id (nm...), uniek';
+COMMENT ON COLUMN people.birth_year IS 'Geboortejaar, tussen 1850 en 2027';
+
+COMMENT ON TABLE users IS 'Gebruikers van de filmbibliotheek';
+COMMENT ON COLUMN users.username IS 'Loginnaam, uniek';
+COMMENT ON COLUMN users.email IS 'E-mailadres, uniek';
+COMMENT ON COLUMN users.password_hash IS 'Gehasht wachtwoord, nooit plaintext';
+COMMENT ON COLUMN users.is_active IS 'Y = actief account, N = geblokkeerd/gedeactiveerd';
+
+COMMENT ON TABLE movies IS 'Alle films in de bibliotheek';
+COMMENT ON COLUMN movies.imdb_id IS 'IMDb id (tt...), uniek';
+COMMENT ON COLUMN movies.release_year IS 'Jaar van uitgave, moet na 1888 zijn';
+COMMENT ON COLUMN movies.runtime_min IS 'Speelduur in minuten';
+COMMENT ON COLUMN movies.quality IS 'Beschikbare kwaliteit: SD, HD of 4K';
+COMMENT ON COLUMN movies.status IS 'available of archived';
+
+COMMENT ON TABLE friendships IS 'Vriendschappen tussen users (aanvrager -> ontvanger)';
+COMMENT ON COLUMN friendships.user_id IS 'User die de aanvraag stuurt';
+COMMENT ON COLUMN friendships.friend_id IS 'User die de aanvraag krijgt';
+COMMENT ON COLUMN friendships.status IS 'pending, accepted of blocked';
+
+COMMENT ON TABLE movie_genres IS 'Koppeltabel film <-> genre';
+
+COMMENT ON TABLE movie_cast IS 'Koppeltabel film <-> persoon met zijn rol';
+COMMENT ON COLUMN movie_cast.cast_role IS 'actor, director of writer';
+
+COMMENT ON TABLE comments IS 'Reacties van users op films, kunnen genest zijn';
+COMMENT ON COLUMN comments.parent_comment_id IS 'Verwijst naar de comment waarop geantwoord wordt, NULL = hoofdcomment';
+COMMENT ON COLUMN comments.body IS 'Tekst van de reactie';
+
+COMMENT ON TABLE ratings IS 'Score die een user aan een film geeft, 1 per film';
+COMMENT ON COLUMN ratings.score IS 'Score van 1 tot 10';
+
+COMMENT ON TABLE watch_history IS 'Kijkgeschiedenis, 1 rij per keer kijken';
+COMMENT ON COLUMN watch_history.watched_at IS 'Wanneer er gekeken is';
+COMMENT ON COLUMN watch_history.seconds_watched IS 'Aantal seconden effectief bekeken';
+
+-- ===== 4 SEQUENCES 
