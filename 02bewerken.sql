@@ -71,5 +71,24 @@ SELECT * FROM genres WHERE name = 'oeps';
 SELECT * 
 FROM movies m
 JOIN movie_genres mg ON m.movie_id = mg.movie_id
-WHERE m.title = 'TCL_FILM'; 
+WHERE m.title = 'TCL_FILM';
+
+-- ===== 4 DQL: JOINS =====
+-- alle films met hun genre en cast (inner join)
+SELECT m.title, m.quality, g.name AS genre, mc.cast_role AS role, p.full_name AS name
+FROM movies m
+JOIN movie_genres mg ON m.movie_id = mg.movie_id
+JOIN genres g ON mg.genre_id = g.genre_id
+JOIN movie_cast mc ON m.movie_id = mc.movie_id
+JOIN people p ON p.person_id = mc.person_id;
+
+-- alle films en ook comments ookal null (left join)
+SELECT * 
+FROM movies m
+LEFT JOIN comments co ON co.movie_id = m.movie_id;
+
+-- zelfde maar right join
+SELECT * 
+FROM comments co
+RIGHT JOIN movies m ON m.movie_id = co.movie_id;
 
