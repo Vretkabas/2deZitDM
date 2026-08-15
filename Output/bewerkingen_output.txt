@@ -1,0 +1,48 @@
+
+Session altered.
+
+Elapsed: 00:00:00.003
+
+Session altered.
+
+Elapsed: 00:00:00.002
+
+Session altered.
+
+Elapsed: 00:00:00.001
+
+1 row deleted.
+
+Elapsed: 00:00:00.007
+
+1 row deleted.
+
+Elapsed: 00:00:00.009
+
+1 row deleted.
+
+Elapsed: 00:00:00.013
+
+1 row deleted.
+
+Elapsed: 00:00:00.009
+
+4 rows inserted.
+
+Elapsed: 00:00:00.002
+
+1 row deleted.
+
+Elapsed: 00:00:00.002
+
+1 row deleted.
+
+Elapsed: 00:00:00.001
+
+1 row deleted.
+
+Elapsed: 00:00:00.010
+
+1 row deleted.
+
+Elapsed: 00:00:00.007
