@@ -1,7 +1,7 @@
 
 Session altered.
 
-Elapsed: 00:00:00.003
+Elapsed: 00:00:00.004
 
 Session altered.
 
@@ -9,35 +9,132 @@ Elapsed: 00:00:00.003
 
 Session altered.
 
-Elapsed: 00:00:00.002
+Elapsed: 00:00:00.003
 
-0 rows deleted.
-
-Elapsed: 00:00:00.001
-
-0 rows deleted.
-
-Elapsed: 00:00:00.001
-
-0 rows deleted.
-
-Elapsed: 00:00:00.000
-
-0 rows deleted.
+1 row deleted.
 
 Elapsed: 00:00:00.002
 
-4 rows inserted.
+1 row deleted.
 
-Elapsed: 00:00:00.001
+Elapsed: 00:00:00.003
 
-2 rows updated.
+1 row deleted.
 
 Elapsed: 00:00:00.012
 
+1 row deleted.
+
+Elapsed: 00:00:00.007
+
+4 rows inserted.
+
+Elapsed: 00:00:00.002
+
+2 rows updated.
+
+Elapsed: 00:00:00.003
+
+1 row deleted.
+
+Elapsed: 00:00:00.004
+
 Error starting at line : 1 in command -
-DELETE FROM movies WHERE title = 'test_film'
+INSERT ALL
+    INTO movies (movie_id, imdb_id, title) VALUES (seq_movie_id.NEXTVAL, 'tt12030333', 'TCL_FILM')
+    INTO movie_genres (movie_id, genre_id) VALUES (seq_movie_id.CURRVAL, 'tt12030333')
+SELECT * FROM dual
+Error at Command Line : 2 Column : 74
 Error report -
-ORA-02292: integrity constraint (DM_LUCAS.FK_MOVIECAST_MOVIE) violated - child record found
-Help: https://docs.oracle.com/error-help/db/ora-02292/
-Elapsed: 00:00:00.026
+SQL Error: ORA-01722: invalid number
+Help: https://docs.oracle.com/error-help/db/ora-01722/
+Elapsed: 00:00:00.011
+
+Savepoint created.
+
+Elapsed: 00:00:00.003
+
+1 row inserted.
+
+Elapsed: 00:00:00.002
+
+Rollback complete.
+
+Elapsed: 00:00:00.001
+
+Commit complete.
+
+Elapsed: 00:00:00.003
+
+Error starting at line : 1 in command -
+INSERT ALL
+    INTO movies (movie_id, imdb_id, title) VALUES (seq_movie_id.NEXTVAL, 'tt12030333', 'TCL_FILM')
+    INTO movie_genres (movie_id, genre_id) VALUES (seq_movie_id.CURRVAL, 'tt12030333')
+SELECT * FROM dual
+Error at Command Line : 2 Column : 74
+Error report -
+SQL Error: ORA-01722: invalid number
+Help: https://docs.oracle.com/error-help/db/ora-01722/
+Elapsed: 00:00:00.004
+
+Savepoint created.
+
+Elapsed: 00:00:00.002
+
+1 row inserted.
+
+Elapsed: 00:00:00.001
+
+Rollback complete.
+
+Elapsed: 00:00:00.001
+
+Commit complete.
+
+Elapsed: 00:00:00.002
+
+Error starting at line : 1 in command -
+INSERT ALL
+    INTO movies (movie_id, imdb_id, title) VALUES (seq_movie_id.NEXTVAL, 'tt12030333', 'TCL_FILM')
+    INTO movie_genres (movie_id, genre_id) VALUES (seq_movie_id.CURRVAL, seq_genre_id.NEXTVAL)
+SELECT * FROM dual
+Error report -
+ORA-02291: integrity constraint (DM_LUCAS.FK_MOVIEGENRES_GENRE) violated - parent key not found
+Help: https://docs.oracle.com/error-help/db/ora-02291/
+Elapsed: 00:00:00.008
+
+Savepoint created.
+
+Elapsed: 00:00:00.002
+
+1 row inserted.
+
+Elapsed: 00:00:00.001
+
+Rollback complete.
+
+Elapsed: 00:00:00.001
+
+Commit complete.
+
+Elapsed: 00:00:00.002
+
+2 rows inserted.
+
+Elapsed: 00:00:00.003
+
+Savepoint created.
+
+Elapsed: 00:00:00.001
+
+1 row inserted.
+
+Elapsed: 00:00:00.001
+
+Rollback complete.
+
+Elapsed: 00:00:00.001
+
+Commit complete.
+
+Elapsed: 00:00:00.003

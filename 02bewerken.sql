@@ -51,5 +51,25 @@ SELECT * FROM comments;
 
 -- ===== 3 TCL =====
 -- nieuwe film + zijn genre invoegen en daarna savepoint plaatsen
+INSERT ALL
+    INTO movies (movie_id, imdb_id, title) VALUES (seq_movie_id.NEXTVAL, 'tt12030333', 'TCL_FILM')
+    INTO movie_genres (movie_id, genre_id) VALUES (seq_movie_id.CURRVAL, 2)
+SELECT * FROM dual;
+SAVEPOINT na_film;
 
+-- fout simuleren
+INSERT INTO genres (genre_id, name) VALUES (seq_genre_id.NEXTVAL, 'oeps');
+
+-- terug naar goede deel foutje weg
+ROLLBACK TO na_film;
+-- commit goede deel
+COMMIT;
+
+-- controleren of genres gemaakt werd
+SELECT * FROM genres WHERE name = 'oeps';
+-- movie werd wel gemaakt
+SELECT * 
+FROM movies m
+JOIN movie_genres mg ON m.movie_id = mg.movie_id
+WHERE m.title = 'TCL_FILM'; 
 
