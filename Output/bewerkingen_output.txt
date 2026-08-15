@@ -5,44 +5,39 @@ Elapsed: 00:00:00.003
 
 Session altered.
 
-Elapsed: 00:00:00.002
+Elapsed: 00:00:00.003
 
 Session altered.
 
+Elapsed: 00:00:00.002
+
+0 rows deleted.
+
 Elapsed: 00:00:00.001
 
-1 row deleted.
+0 rows deleted.
 
-Elapsed: 00:00:00.007
+Elapsed: 00:00:00.001
 
-1 row deleted.
+0 rows deleted.
 
-Elapsed: 00:00:00.009
+Elapsed: 00:00:00.000
 
-1 row deleted.
+0 rows deleted.
 
-Elapsed: 00:00:00.013
-
-1 row deleted.
-
-Elapsed: 00:00:00.009
+Elapsed: 00:00:00.002
 
 4 rows inserted.
 
-Elapsed: 00:00:00.002
-
-1 row deleted.
-
-Elapsed: 00:00:00.002
-
-1 row deleted.
-
 Elapsed: 00:00:00.001
 
-1 row deleted.
+2 rows updated.
 
-Elapsed: 00:00:00.010
+Elapsed: 00:00:00.012
 
-1 row deleted.
-
-Elapsed: 00:00:00.007
+Error starting at line : 1 in command -
+DELETE FROM movies WHERE title = 'test_film'
+Error report -
+ORA-02292: integrity constraint (DM_LUCAS.FK_MOVIECAST_MOVIE) violated - child record found
+Help: https://docs.oracle.com/error-help/db/ora-02292/
+Elapsed: 00:00:00.026

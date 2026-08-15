@@ -41,5 +41,15 @@ JOIN people p ON mc.person_id = p.person_id
 WHERE m.imdb_id = 'tt12030303';
 
 -- ===== 2 DML =====
+-- status updaten van de test film
+UPDATE movies SET status = 'archived' WHERE title = 'test_film';
+SELECT status FROM movies WHERE title = 'test_film';
+
+-- een test comment deleten
+DELETE FROM comments WHERE comment_id = 1;
+SELECT * FROM comments;
+
+-- ===== 3 TCL =====
+-- nieuwe film + zijn genre invoegen en daarna savepoint plaatsen
 
 
