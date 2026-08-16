@@ -78,7 +78,7 @@ FROM   users u;
 
 -- voorbeeld 2
 -- without index
-ALTER INDEX ix_movies_title INVISIBLE
+ALTER INDEX ix_movies_title INVISIBLE;
 
 EXPLAIN PLAN FOR SELECT * FROM movies ORDER BY title FETCH FIRST 20 ROWS ONLY;
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
@@ -86,12 +86,20 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 SELECT * FROM movies ORDER BY title FETCH FIRST 20 ROWS ONLY;
 
 -- with index
-ALTER INDEX ix_movies_title VISIBLE
+ALTER INDEX ix_movies_title VISIBLE;
 
 EXPLAIN PLAN FOR SELECT * FROM movies ORDER BY title FETCH FIRST 20 ROWS ONLY;
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
 SELECT * FROM movies ORDER BY title FETCH FIRST 20 ROWS ONLY;
 
--- voorbeeld 3
+-- voorbeeld 3: waarom ik geen index op status maak bijvoorbeeld
+SELECT status, COUNT(*) FROM movies GROUP BY status;   -- ~90% available, ~10% archived
 
+DROP INDEX ix_movies_status;
+CREATE INDEX ix_movies_status ON movies(status);
+
+EXPLAIN PLAN FOR SELECT * FROM movies WHERE status = 'archived';
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);     -- een full table scan
+
+DROP INDEX ix_movies_status;
