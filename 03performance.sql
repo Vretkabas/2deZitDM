@@ -24,4 +24,17 @@ SELECT * FROM v_movie_overview;
 CREATE OR REPLACE view v_public_users AS
 SELECT user_id, username, display_name, created_at
 FROM users
-WHERE UPPER(is_active) = 'Y';
+WHERE UPPER(is_active) = 'Y'
+WITH READ ONLY;
+
+-- beschikbare films
+CREATE OR REPLACE view v_available_movies AS
+SELECT *
+FROM movies
+WHERE UPPER(status) = 'AVAILABLE'
+WITH CHECK OPTION;
+
+-- testen
+DESC v_public_users; -- geen email / pw
+UPDATE v_public_users SET username='x' WHERE ROWNUM=1; -- faalt, read only
+INSERT INTO v_available_movies (movie_id, imdb_id, status, title) VALUES (seq_movie_id.NEXTVAL, 'tt12334Fttt', 'archived', 'testtting'); 
