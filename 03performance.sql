@@ -38,3 +38,11 @@ WITH CHECK OPTION;
 DESC v_public_users; -- geen email / pw
 UPDATE v_public_users SET username='x' WHERE ROWNUM=1; -- faalt, read only
 INSERT INTO v_available_movies (movie_id, imdb_id, status, title) VALUES (seq_movie_id.NEXTVAL, 'tt12334Fttt', 'archived', 'testtting'); 
+
+-- ===== 3 indexen =====
+CREATE INDEX ix_movies_title ON movies(title);
+CREATE BITMAP INDEX bx_movies_quality ON movies(quality);
+CREATE INDEX fx_movies_uppertitle ON movies(UPPER(title));
+CREATE INDEX ix_watch_user_movie ON watch_history(user_id, movie_id);
+CREATE INDEX ix_comments_movie ON comments(movie_id);
+CREATE INDEX ix_ratings_movie ON ratings(movie_id);
