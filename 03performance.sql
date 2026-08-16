@@ -103,3 +103,40 @@ EXPLAIN PLAN FOR SELECT * FROM movies WHERE status = 'archived';
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);     -- een full table scan
 
 DROP INDEX ix_movies_status;
+
+
+-- ===== 5 users, priv en roles =====
+CREATE USER filmlib_friend IDENTIFIED BY Geheim123;
+GRANT CREATE SESSION TO filmlib_friend;
+
+-- vriend mag select op mijn publieke views + movies, insert op comments/ratings. 
+CREATE ROLE role_viewer;
+BEGIN
+  FOR v IN (SELECT view_name FROM user_views
+            WHERE view_name IN ('V_MOVIE_OVERVIEW', 'V_PUBLIC_USERS', 'V_AVAILABLE_MOVIES')) LOOP
+    EXECUTE IMMEDIATE 'GRANT SELECT ON ' || v.view_name || ' TO role_viewer';
+    DBMS_OUTPUT.PUT_LINE('grant op ' || v.view_name);
+  END LOOP;
+END;
+/
+-- select op movies tabel
+GRANT SELECT ON movies TO role_viewer;
+
+SELECT grantee, table_name, privilege
+FROM   user_tab_privs
+WHERE  grantee = 'ROLE_VIEWER';
+
+-- nieuwe rol contributor insert op comments/ratings
+CREATE ROLE role_contributor;
+GRANT INSERT ON ratings TO role_contributor;
+GRANT INSERT ON comments TO role_contributor;
+GRANT SELECT on seq_comment_id TO role_contributor;
+
+SELECT grantee, table_name, privilege
+FROM user_tab_privs 
+WHERE grantee = 'ROLE_CONTRIBUTOR';
+
+GRANT SELECT ON v_movie_overview TO filmlib_friend WITH GRANT OPTION;
+GRANT role_contributor TO filmlib_friend;
+GRANT role_viewer TO filmlib_friend;
+
