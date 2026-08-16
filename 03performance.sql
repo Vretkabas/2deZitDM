@@ -8,7 +8,7 @@ ALTER SESSION SET NLS_LANGUAGE = 'ENGLISH';
 
 -- ===== 1 view =====
 -- view die film titel, zijn genres, gemiddelde score, aantal comments geeft
-CREATE OR REPLACE view v_movie_overview AS 
+CREATE OR REPLACE view v_movie_overview AS
 SELECT m.title, g.name AS genre, ra.score, COUNT(co.comment_id) AS aantal_comments
 FROM movies m
 JOIN movie_genres mg ON m.movie_id = mg.movie_id
@@ -17,7 +17,7 @@ JOIN ratings ra ON m.movie_id = ra.movie_id
 JOIN comments co ON m.movie_id = co.movie_id
 GROUP BY m.title, g.name, ra.score;
 
-SELECT * FROM v_movie_overview;
+SELECT * FROM v_movie_overview FETCH FIRST 3 ROWS ONLY;
 
 -- ===== 2 beveiliging views =====
 -- view van de users read only (user_id, username, display name, created at)
@@ -37,7 +37,7 @@ WITH CHECK OPTION;
 -- testen
 DESC v_public_users; -- geen email / pw
 UPDATE v_public_users SET username='x' WHERE ROWNUM=1; -- faalt, read only
-INSERT INTO v_available_movies (movie_id, imdb_id, status, title) VALUES (seq_movie_id.NEXTVAL, 'tt12334Fttt', 'archived', 'testtting'); 
+INSERT INTO v_available_movies (movie_id, imdb_id, status, title) VALUES (seq_movie_id.NEXTVAL, 'tt12334Fttt', 'archived', 'testtting');
 
 -- ===== 3 indexen =====
 CREATE INDEX ix_movies_title ON movies(title);
@@ -46,3 +46,34 @@ CREATE INDEX fx_movies_uppertitle ON movies(UPPER(title));
 CREATE INDEX ix_watch_user_movie ON watch_history(user_id, movie_id);
 CREATE INDEX ix_comments_movie ON comments(movie_id);
 CREATE INDEX ix_ratings_movie ON ratings(movie_id);
+
+-- ===== 4 bewijs snelheidsverschil =====
+ALTER INDEX ix_watch_user_movie INVISIBLE;
+ALTER INDEX PK_USERS INVISIBLE;
+-- Plan tonen ZONDER index
+EXPLAIN PLAN FOR SELECT u.user_id,
+       (SELECT COUNT(*) FROM watch_history w WHERE w.user_id = u.user_id) AS kijkbeurten
+FROM   users u;
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);   -- TABLE ACCESS FULL
+
+-- Tijd meten
+SELECT u.user_id,
+       (SELECT COUNT(*) FROM watch_history w WHERE w.user_id = u.user_id) AS kijkbeurten
+FROM   users u;
+
+ALTER INDEX ix_watch_user_movie VISIBLE;
+ALTER INDEX PK_USERS VISIBLE;
+
+-- Plan tonen MET index
+EXPLAIN PLAN FOR SELECT u.user_id,
+       (SELECT COUNT(*) FROM watch_history w WHERE w.user_id = u.user_id) AS kijkbeurten
+FROM   users u;
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);        -- -> INDEX RANGE SCAN
+
+-- tijd opnieuw meten
+SELECT u.user_id,
+       (SELECT COUNT(*) FROM watch_history w WHERE w.user_id = u.user_id) AS kijkbeurten
+FROM   users u;
+
+
+-- voorbeeld 2
