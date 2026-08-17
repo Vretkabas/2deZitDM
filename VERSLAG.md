@@ -16,7 +16,6 @@ Ik koos dit thema omdat het elk cursusconcept toont. Het duidelijkste voorbeeld 
 
 | Stap | Bestand | Als wie | Wat |
 |---|---|---|---|
-| 0 | `00admin.sql` | `SYSTEM` | Kent `CREATE USER` / `CREATE ROLE` toe aan `dm_lucas` |
 | 1 | `01setup.sql` | `dm_lucas` | Tabellen, constraints, comments, sequences |
 | 2 | `python_films/load_films.py` | — | Vult de databank (of gebruik `02data.sql`) |
 | 3 | `02bewerken.sql` | `dm_lucas` | DML, transacties, queries |

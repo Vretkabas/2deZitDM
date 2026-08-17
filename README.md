@@ -43,7 +43,13 @@ Open een terminal in de map `2deZitDM` en verbind:
 sqlplus <jouw_gebruiker>@localhost:1521/XEPDB1
 ```
 
-Draai daarna in deze volgorde:
+Draai daarna dit ene commando — het roept alle scripts in de juiste volgorde aan:
+
+```
+@run_all.sql
+```
+
+Liever stap voor stap? Dan kan je ze ook los draaien:
 
 ```
 @01setup.sql        -- tabellen, constraints, comments, sequences
@@ -90,6 +96,7 @@ De datadump levert exact hetzelfde resultaat, daarom is die de aanbevolen weg.
 
 | Bestand | Inhoud |
 |---|---|
+| `run_all.sql` | Master-script: draait alles hieronder in de juiste volgorde |
 | `01setup.sql` | 10 tabellen met alle constraints, `COMMENT ON`, 6 sequences |
 | `data_dump.sql` | Alle data als `INSERT`-statements + sequences bijzetten |
 | `02bewerken.sql` | DML, `SAVEPOINT`/`ROLLBACK`/`COMMIT`, joins en queries |
