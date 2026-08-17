@@ -140,3 +140,4 @@ GRANT SELECT ON v_movie_overview TO filmlib_friend WITH GRANT OPTION;
 GRANT role_contributor TO filmlib_friend;
 GRANT role_viewer TO filmlib_friend;
 
+SPOOL OFF;

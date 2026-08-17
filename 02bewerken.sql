@@ -92,3 +92,4 @@ SELECT *
 FROM comments co
 RIGHT JOIN movies m ON m.movie_id = co.movie_id;
 
+SPOOL OFF;

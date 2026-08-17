@@ -191,3 +191,5 @@ CREATE SEQUENCE seq_user_id
 SELECT seq_genre_id.NEXTVAL FROM dual;   -- geeft 1, verhoogt de teller
 SELECT seq_genre_id.NEXTVAL FROM dual;   -- geeft 2
 SELECT seq_genre_id.CURRVAL FROM dual;   -- geeft 2 (laatste waarde in deze sessie)
+
+SPOOL OFF;
