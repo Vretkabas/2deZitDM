@@ -116,15 +116,90 @@ Zes handmatige indexen, gekozen om de vier types te demonstreren:
 
 Daarnaast bestaan er **automatisch** indexen op elke `PRIMARY KEY` en `UNIQUE`-constraint, in totaal een vijftiental. De zes hierboven zijn dus een aanvulling, geen volledige lijst.
 
+### Bewijs van snelheidsverschil met indexen:
+voorbeeld 1 `SELECT u.user_id,
+       (SELECT COUNT(*) FROM watch_history w WHERE w.user_id = u.user_id) AS kijkbeurten
+FROM   users u;`
+plan zonder index `ix_watch_user_movie` en `pk_users`:
+
+Plan hash value: 3109131724
+ 
+------------------------------------------------------------------------------------
+| Id  | Operation          | Name          | Rows  | Bytes | Cost (%CPU)| Time     |
+------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |               |   300 |  1200 | 38858   (2)| 00:00:02 |
+|   1 |  SORT AGGREGATE    |               |     1 |     4 |            |          |
+|*  2 |   TABLE ACCESS FULL| WATCH_HISTORY |   667 |  2668 |   241   (2)| 00:00:01 |
+|   3 |  TABLE ACCESS FULL | USERS         |   300 |  1200 |     3   (0)| 00:00:01 |
+------------------------------------------------------------------------------------
+ 
+plan met index  `ix_movies_title`:
+Plan hash value: 2495154619
+ 
+-----------------------------------------------------------------------------------------
+| Id  | Operation         | Name                | Rows  | Bytes | Cost (%CPU)| Time     |
+-----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT  |                     |   300 |  1200 |   647   (1)| 00:00:01 |
+|   1 |  SORT AGGREGATE   |                     |     1 |     4 |            |          |
+|*  2 |   INDEX RANGE SCAN| IX_WATCH_USER_MOVIE |   667 |  2668 |     4   (0)| 00:00:01 |
+|   3 |  INDEX FULL SCAN  | PK_USERS            |   300 |  1200 |     1   (0)| 00:00:01 |
+-----------------------------------------------------------------------------------------
+ 
+We zien dat de cost veel minder is met index, dus veel sneller.
+
+Voorbeeld 2 `SELECT * FROM movies ORDER BY title FETCH FIRST 20 ROWS ONLY`:
+
+zonder index: 
+ 
+-------------------------------------------------------------------------------------------
+| Id  | Operation                | Name   | Rows  | Bytes |TempSpc| Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT         |        |    20 | 26460 |       |   872   (1)| 00:00:01 |
+|*  1 |  VIEW                    |        |    20 | 26460 |       |   872   (1)| 00:00:01 |
+|*  2 |   WINDOW SORT PUSHED RANK|        | 48845 |  2957K|  4040K|   872   (1)| 00:00:01 |
+|   3 |    TABLE ACCESS FULL     | MOVIES | 48845 |  2957K|       |   137   (1)| 00:00:01 |
+-------------------------------------------------------------------------------------------
+
+met index:
+ 
+-------------------------------------------------------------------------------------------------
+| Id  | Operation                     | Name            | Rows  | Bytes | Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT              |                 |    20 | 26460 |    22   (0)| 00:00:01 |
+|*  1 |  VIEW                         |                 |    20 | 26460 |    22   (0)| 00:00:01 |
+|*  2 |   WINDOW NOSORT STOPKEY       |                 |    20 |  1240 |    22   (0)| 00:00:01 |
+|   3 |    TABLE ACCESS BY INDEX ROWID| MOVIES          | 48845 |  2957K|    22   (0)| 00:00:01 |
+|   4 |     INDEX FULL SCAN           | IX_MOVIES_TITLE |    20 |       |     2   (0)| 00:00:01 |
+-------------------------------------------------------------------------------------------------
+
+opnieuw cost is veel minder
+
+voorbeeld 3 (slecht) `SELECT * FROM movies WHERE status = 'archived'`:
+
+met index `ix_movies_status`:
+
+Plan hash value: 1061452828
+ 
+----------------------------------------------------------------------------
+| Id  | Operation         | Name   | Rows  | Bytes | Cost (%CPU)| Time     |
+----------------------------------------------------------------------------
+|   0 | SELECT STATEMENT  |        | 24423 |  1478K|   137   (1)| 00:00:01 |
+|*  1 |  TABLE ACCESS FULL| MOVIES | 24423 |  1478K|   137   (1)| 00:00:01 |
+----------------------------------------------------------------------------
+ 
+We zien dat het nog steeds een full table access doet zelf met index --> index dus niet nodig
+
+Waarom gebeurt dit?
+
+**De clustering factor verklaart waarom een index op `status` nooit gebruikt wordt.** Ongeveer 10% van de films heeft status `archived` op het eerste gezicht selectief genoeg. Maar die rijen liggen willekeurig verspreid over alle datablokken: in elk blok van ~50 rijen zitten er ~5 archived. Via de index zou Oracle bijna 4.900 losse blokken moeten lezen (random I/O), terwijl de hele tabel maar ~1.000 blokken telt die hij sequentieel kan doorlopen. De index is dus ongeveer vier keer duurder. Niet het *percentage* telt, maar het *aantal rijen ten opzichte van het aantal blokken*.
+
+Deze index heb ik daarom weer verwijderd: hij zou nooit gebruikt worden en enkel `INSERT`/`UPDATE`/`DELETE` vertragen.
+
 #### Wat ik geleerd heb uit de metingen
 
 **Een leidende wildcard maakt elke B-tree nutteloos.** `WHERE title LIKE '%Incep%'` geeft altijd een full table scan.
 
 **De optimizer beslist op basis van verwachte rij-aantallen, niet op basis van het bestaan van een index.** Bij dezelfde index en dezelfde kolom kiest hij een ander plan naargelang de waarde selectief is of niet.
-
-**De clustering factor verklaart waarom een index op `status` nooit gebruikt wordt.** Ongeveer 10% van de films heeft status `archived` op het eerste gezicht selectief genoeg. Maar die rijen liggen willekeurig verspreid over alle datablokken: in elk blok van ~50 rijen zitten er ~5 archived. Via de index zou Oracle bijna 4.900 losse blokken moeten lezen (random I/O), terwijl de hele tabel maar ~1.000 blokken telt die hij sequentieel kan doorlopen. De index is dus ongeveer vier keer duurder. Niet het *percentage* telt, maar het *aantal rijen ten opzichte van het aantal blokken*.
-
-Deze index heb ik daarom weer verwijderd: hij zou nooit gebruikt worden en enkel `INSERT`/`UPDATE`/`DELETE` vertragen.
 
 **Meten vraagt zorg.** `SET TIMING` op een `SELECT *` meet enkel de eerste ~100 opgehaalde rijen, niet de volledige query — daarom gebruik ik `COUNT(*)`. En de `Cost`-waarde uit het uitvoeringsplan is betrouwbaarder dan kloktijd.
 
@@ -165,19 +240,5 @@ De sociale gegevens (`users`, `friendships`, `comments`, `ratings`, `watch_histo
 - Oracle Database SQL Language Reference — `EXPLAIN PLAN`, `CREATE SEQUENCE`, `CREATE VIEW`, `GRANT`
 - Cursusmateriaal Data Management (Notion): DQL, DDL, Sequences, Views, Performance boosting, Database Security: https://app.notion.com/p/510949731bab4feab714010da0f74ba5?v=a7c6a87d436f428fa455af48367e2e76&source=copy_link
 - gemini voor vragen: https://share.gemini.google/jmxPtI5QW8Ko
-
----
-
-## 6. Het laadscript (ETL)
-
-`python_films/load_films.py` doorloopt drie fasen:
-
-1. **Extract** — de IMDb-bestanden worden streamend ingelezen. De volgorde is bewust: eerst het kleine `title.ratings`-bestand om een set populaire titels te bouwen, dan pas de grote bestanden filteren op die set. Zonder die volgorde zou `title.principals` (ongeveer 90 miljoen rijen) volledig in het geheugen belanden.
-2. **Transform** — genres uitsplitsen, personen ontdubbelen, IMDb-categorieën mappen naar `actor`/`director`/`writer`, en de synthetische sociale data genereren binnen de grenzen van alle CHECK-constraints.
-3. **Load** — `executemany` in batches van 5.000 rijen, in foreign-key-volgorde.
-
-Na het laden worden de sequences met `ALTER SEQUENCE ... RESTART START WITH` voorbij de hoogste geladen id gezet, zodat `NEXTVAL` in de SQL-scripts niet botst met bestaande rijen.
-
-De indexen worden pas na het laden aangemaakt, conform de best practice uit de cursus: een bestaande index moet bij elke `INSERT` bijgewerkt worden en vertraagt een bulk-load aanzienlijk.
 
 ---
