@@ -7,20 +7,15 @@ Dit bestand legt uit hoe je de databank opzet. De inhoudelijke verantwoording
 
 ---
 
-## Gebruik van AI — volledige openheid
+## Gebruik van AI
 
 Ik heb bij dit werkstuk Claude Code gebruikt. Hieronder staat wat door AI gemaakt is
-en wat door mij, zodat er geen twijfel over bestaat.
 
 **Door AI geschreven:**
 
 - `python_films/load_films.py` — het ETL-script
 - `python_films/export_dump.py` — het exportscript voor de datadump
 - `README.md`
-
-
-**Over de gesprekken:** Claude Code draait lokaal in de terminal en genereert geen
-deelbare gesprekslinks, dus ik kan de conversaties helaas niet als bijlage meesturen.
 
 ---
 
