@@ -116,14 +116,21 @@ Zes handmatige indexen, gekozen om de vier types te demonstreren:
 
 Daarnaast bestaan er **automatisch** indexen op elke `PRIMARY KEY` en `UNIQUE`-constraint, in totaal een vijftiental. De zes hierboven zijn dus een aanvulling, geen volledige lijst.
 
-### Bewijs van snelheidsverschil met indexen:
-voorbeeld 1 `SELECT u.user_id,
-       (SELECT COUNT(*) FROM watch_history w WHERE w.user_id = u.user_id) AS kijkbeurten
-FROM   users u;`
-plan zonder index `ix_watch_user_movie` en `pk_users`:
+### Bewijs van snelheidsverschil met indexen
 
+#### Voorbeeld 1 — gecorreleerde subquery
+
+```sql
+SELECT u.user_id,
+       (SELECT COUNT(*) FROM watch_history w WHERE w.user_id = u.user_id) AS kijkbeurten
+FROM   users u;
+```
+
+**Plan zonder** index `ix_watch_user_movie` en `pk_users`:
+
+```text
 Plan hash value: 3109131724
- 
+
 ------------------------------------------------------------------------------------
 | Id  | Operation          | Name          | Rows  | Bytes | Cost (%CPU)| Time     |
 ------------------------------------------------------------------------------------
@@ -132,10 +139,13 @@ Plan hash value: 3109131724
 |*  2 |   TABLE ACCESS FULL| WATCH_HISTORY |   667 |  2668 |   241   (2)| 00:00:01 |
 |   3 |  TABLE ACCESS FULL | USERS         |   300 |  1200 |     3   (0)| 00:00:01 |
 ------------------------------------------------------------------------------------
- 
-plan met index  `ix_movies_title`:
+```
+
+**Plan met** index `ix_movies_title`:
+
+```text
 Plan hash value: 2495154619
- 
+
 -----------------------------------------------------------------------------------------
 | Id  | Operation         | Name                | Rows  | Bytes | Cost (%CPU)| Time     |
 -----------------------------------------------------------------------------------------
@@ -144,13 +154,19 @@ Plan hash value: 2495154619
 |*  2 |   INDEX RANGE SCAN| IX_WATCH_USER_MOVIE |   667 |  2668 |     4   (0)| 00:00:01 |
 |   3 |  INDEX FULL SCAN  | PK_USERS            |   300 |  1200 |     1   (0)| 00:00:01 |
 -----------------------------------------------------------------------------------------
- 
-We zien dat de cost veel minder is met index, dus veel sneller.
+```
 
-Voorbeeld 2 `SELECT * FROM movies ORDER BY title FETCH FIRST 20 ROWS ONLY`:
+> We zien dat de cost veel minder is met index, dus veel sneller.
 
-zonder index: 
- 
+#### Voorbeeld 2 — sorteren met een limiet
+
+```sql
+SELECT * FROM movies ORDER BY title FETCH FIRST 20 ROWS ONLY;
+```
+
+**Zonder index:**
+
+```text
 -------------------------------------------------------------------------------------------
 | Id  | Operation                | Name   | Rows  | Bytes |TempSpc| Cost (%CPU)| Time     |
 -------------------------------------------------------------------------------------------
@@ -159,9 +175,11 @@ zonder index:
 |*  2 |   WINDOW SORT PUSHED RANK|        | 48845 |  2957K|  4040K|   872   (1)| 00:00:01 |
 |   3 |    TABLE ACCESS FULL     | MOVIES | 48845 |  2957K|       |   137   (1)| 00:00:01 |
 -------------------------------------------------------------------------------------------
+```
 
-met index:
- 
+**Met index:**
+
+```text
 -------------------------------------------------------------------------------------------------
 | Id  | Operation                     | Name            | Rows  | Bytes | Cost (%CPU)| Time     |
 -------------------------------------------------------------------------------------------------
@@ -171,25 +189,32 @@ met index:
 |   3 |    TABLE ACCESS BY INDEX ROWID| MOVIES          | 48845 |  2957K|    22   (0)| 00:00:01 |
 |   4 |     INDEX FULL SCAN           | IX_MOVIES_TITLE |    20 |       |     2   (0)| 00:00:01 |
 -------------------------------------------------------------------------------------------------
+```
 
-opnieuw cost is veel minder
+> Opnieuw cost is veel minder.
 
-voorbeeld 3 (slecht) `SELECT * FROM movies WHERE status = 'archived'`:
+#### Voorbeeld 3 (slecht) — een index die genegeerd wordt
 
-met index `ix_movies_status`:
+```sql
+SELECT * FROM movies WHERE status = 'archived';
+```
 
+**Met index** `ix_movies_status`:
+
+```text
 Plan hash value: 1061452828
- 
+
 ----------------------------------------------------------------------------
 | Id  | Operation         | Name   | Rows  | Bytes | Cost (%CPU)| Time     |
 ----------------------------------------------------------------------------
 |   0 | SELECT STATEMENT  |        | 24423 |  1478K|   137   (1)| 00:00:01 |
 |*  1 |  TABLE ACCESS FULL| MOVIES | 24423 |  1478K|   137   (1)| 00:00:01 |
 ----------------------------------------------------------------------------
- 
-We zien dat het nog steeds een full table access doet zelf met index --> index dus niet nodig
+```
 
-Waarom gebeurt dit?
+> We zien dat het nog steeds een full table access doet zelf met index → index dus niet nodig.
+
+**Waarom gebeurt dit?**
 
 **De clustering factor verklaart waarom een index op `status` nooit gebruikt wordt.** Ongeveer 10% van de films heeft status `archived` op het eerste gezicht selectief genoeg. Maar die rijen liggen willekeurig verspreid over alle datablokken: in elk blok van ~50 rijen zitten er ~5 archived. Via de index zou Oracle bijna 4.900 losse blokken moeten lezen (random I/O), terwijl de hele tabel maar ~1.000 blokken telt die hij sequentieel kan doorlopen. De index is dus ongeveer vier keer duurder. Niet het *percentage* telt, maar het *aantal rijen ten opzichte van het aantal blokken*.
 
