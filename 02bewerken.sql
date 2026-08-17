@@ -43,11 +43,11 @@ WHERE m.imdb_id = 'tt12030303';
 -- ===== 2 DML =====
 -- status updaten van de test film
 UPDATE movies SET status = 'archived' WHERE title = 'test_film';
-SELECT status FROM movies WHERE title = 'test_film';
+SELECT status FROM movies WHERE title = 'test_film' FETCH FIRST 10 ROWS ONLY;
 
 -- een test comment deleten
 DELETE FROM comments WHERE comment_id = 1;
-SELECT * FROM comments;
+SELECT * FROM comments FETCH FIRST 10 ROWS ONLY;
 
 -- ===== 3 TCL =====
 -- nieuwe film + zijn genre invoegen en daarna savepoint plaatsen
@@ -80,16 +80,19 @@ FROM movies m
 JOIN movie_genres mg ON m.movie_id = mg.movie_id
 JOIN genres g ON mg.genre_id = g.genre_id
 JOIN movie_cast mc ON m.movie_id = mc.movie_id
-JOIN people p ON p.person_id = mc.person_id;
+JOIN people p ON p.person_id = mc.person_id
+FETCH FIRST 10 ROWS ONLY;
 
 -- alle films en ook comments ookal null (left join)
 SELECT * 
 FROM movies m
-LEFT JOIN comments co ON co.movie_id = m.movie_id;
+LEFT JOIN comments co ON co.movie_id = m.movie_id
+FETCH FIRST 10 ROWS ONLY;
 
 -- zelfde maar right join
 SELECT * 
 FROM comments co
-RIGHT JOIN movies m ON m.movie_id = co.movie_id;
+RIGHT JOIN movies m ON m.movie_id = co.movie_id
+FETCH FIRST 10 ROWS ONLY;
 
 SPOOL OFF;

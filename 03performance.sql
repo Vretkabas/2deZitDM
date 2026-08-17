@@ -8,15 +8,21 @@ ALTER SESSION SET NLS_LANGUAGE = 'ENGLISH';
 
 -- ===== 1 view =====
 -- view die film titel, zijn genres, gemiddelde score, aantal comments geeft
-CREATE OR REPLACE view v_movie_overview AS
-SELECT m.title, g.name AS genre, ra.score, COUNT(co.comment_id) AS aantal_comments
-FROM movies m
-JOIN movie_genres mg ON m.movie_id = mg.movie_id
-JOIN genres g ON g.genre_id = mg.genre_id
-JOIN ratings ra ON m.movie_id = ra.movie_id
-JOIN comments co ON m.movie_id = co.movie_id
-GROUP BY m.title, g.name, ra.score;
-
+CREATE OR REPLACE VIEW v_movie_overview AS
+SELECT m.movie_id,
+       m.title,
+       m.release_year,
+       (SELECT LISTAGG(g.name, ', ') WITHIN GROUP (ORDER BY g.name)
+          FROM movie_genres mg
+          JOIN genres g ON g.genre_id = mg.genre_id
+         WHERE mg.movie_id = m.movie_id)   AS genres,
+       (SELECT ROUND(AVG(ra.score), 2)
+          FROM ratings ra
+         WHERE ra.movie_id = m.movie_id)   AS gem_score,
+       (SELECT COUNT(*)
+          FROM comments co
+         WHERE co.movie_id = m.movie_id)   AS aantal_comments
+FROM movies m;
 SELECT * FROM v_movie_overview FETCH FIRST 3 ROWS ONLY;
 
 -- ===== 2 beveiliging views =====
@@ -40,6 +46,14 @@ UPDATE v_public_users SET username='x' WHERE ROWNUM=1; -- faalt, read only
 INSERT INTO v_available_movies (movie_id, imdb_id, status, title) VALUES (seq_movie_id.NEXTVAL, 'tt12334Fttt', 'archived', 'testtting');
 
 -- ===== 3 indexen =====
+-- eerst indexen droppen
+DROP INDEX ix_movies_title;
+DROP INDEX bx_movies_quality;
+DROP INDEX fx_movies_uppertitle;
+DROP INDEX ix_watch_user_movie;
+DROP INDEX ix_comments_movie;
+DROP INDEX ix_ratings_movie;
+
 CREATE INDEX ix_movies_title ON movies(title);
 CREATE BITMAP INDEX bx_movies_quality ON movies(quality);
 CREATE INDEX fx_movies_uppertitle ON movies(UPPER(title));
@@ -106,6 +120,11 @@ DROP INDEX ix_movies_status;
 
 
 -- ===== 5 users, priv en roles =====
+-- Eerst droppen
+DROP USER filmlib_friend;
+DROP ROLE role_viewer;
+DROP ROLE role_contributor;
+
 CREATE USER filmlib_friend IDENTIFIED BY Geheim123;
 GRANT CREATE SESSION TO filmlib_friend;
 
